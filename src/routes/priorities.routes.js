@@ -6,14 +6,15 @@ import {
   updatePriorityController,
   deletePriorityController,
 } from "../controllers/priorities.controller.js";
+import { checkTokenRole, checkToken } from "../middlewares/checkToken.js";
 
 const router = Router();
 
-router.post("/", createPriorityController);
-router.get("/", getAllPrioritiesController);
-router.get("/:id", getOnePriorityController);
-router.put("/:id", updatePriorityController);
-router.delete("/:id", deletePriorityController);
+router.post("/", checkToken, createPriorityController);
+router.get("/",checkTokenRole, getAllPrioritiesController);
+router.get("/:id", checkTokenRole, getOnePriorityController);
+router.put("/:id", checkTokenRole, updatePriorityController);
+router.delete("/:id", checkTokenRole, deletePriorityController);
 
 export default router;
 
