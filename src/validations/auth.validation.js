@@ -64,16 +64,14 @@ export const signinValidation = async (body) => {
   try {
     const schema = Joi.object({
       email: Joi.string().email().required(),
-      username: Joi.string().required(),
       password: Joi.string().min(6).max(6).required(),
-      role: Joi.string().valid("user", "admin", "moderator").required(),
     });
 
     const { error, value } = schema.validate(body);
 
     if (error) {
       return {
-        messages: "Bad request",
+        messages: error.details[0].message,
         value: "",
       };
     }
@@ -94,10 +92,7 @@ export const signinValidation = async (body) => {
 export const refreshTokenValidation = async (body) => {
   try {
     const schema = Joi.object({
-      email: Joi.string().email().required(),
-      username: Joi.string().required(),
-      password: Joi.string().min(6).max(6).required(),
-      role: Joi.string().valid("user", "admin", "moderator").required(),
+      refreshToken: Joi.string().required(),
     });
 
     const { error, value } = schema.validate(body);

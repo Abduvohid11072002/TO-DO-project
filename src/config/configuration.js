@@ -16,7 +16,13 @@ const configuration = {
     NODEMAILER_PORT: process.env.NODEMAILER_PORT,
     NODEMAILER_EMAIL: process.env.NODEMAILER_EMAIL,
     NODEMAILER_PASS: process.env.NODEMAILER_PASS,
-  }
+  },
+  token: {
+    ACCESS_TOKEN_KEY: process.env.ACCESS_TOKEN_KEY,
+    ACCESS_TOKEN_TIME: process.env.ACCESS_TOKEN_TIME,
+    REFRESH_TOKEN_KEY: process.env.REFRESH_TOKEN_KEY,
+    REFRESH_TOKEN_TIME: process.env.REFRESH_TOKEN_TIME,
+  },
 };
 
 export default configuration;

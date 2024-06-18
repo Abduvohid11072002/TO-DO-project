@@ -45,7 +45,7 @@ export const createTables = async () => {
       )`,
       `
       CREATE TABLE IF NOT EXISTS refresh_token (
-          username VARCHAR(100) NOT NULL,
+          username VARCHAR(100) NOT NULL PRIMARY KEY,
           refresh TEXT NOT NULL
       )`,
       `

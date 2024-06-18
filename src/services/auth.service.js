@@ -3,6 +3,7 @@ import { generate } from "otp-generator";
 import { sendEmail } from "../utils/nodemailer.js";
 import { compare, hash } from "bcrypt";
 import configuration from "../config/configuration.js";
+import { createToken } from "../utils/jsonwebtoken.js";
 
 export const signupService = async (user) => {
   try {
@@ -119,25 +120,75 @@ export const signinService = async (user) => {
       user.email,
     ]);
 
-    if (existUser) {
+    if (existUser.rows.length !== 1) {
       return {
         status: 400,
         values: "",
-        message: "User already exist",
+        message: "Invalid Email",
       };
     }
-    const { email, username, password, role } = user;
 
-    const newUser = await pool.query(
-      `INSERT INTO users ('email', 'username', 'password','role')
-      VALUES($1, $2, $3, $4) RETURNING *`,
-      [email, username, password, role]
+    const checkPassword = await compare(
+      user.password,
+      existUser.rows[0].password
     );
-    console.log(newUser);
+
+    if (!checkPassword) {
+      return {
+        status: 400,
+        values: "",
+        message: "Invalid Password",
+      };
+    }
+
+    const {
+      ACCESS_TOKEN_KEY,
+      ACCESS_TOKEN_TIME,
+      REFRESH_TOKEN_KEY,
+      REFRESH_TOKEN_TIME,
+    } = configuration.token;
+
+    const { password, email, role, username } = existUser.rows[0];
+
+    const access_token = await createToken(
+      { username, email, password, role },
+      ACCESS_TOKEN_KEY,
+      { expiresIn: ACCESS_TOKEN_TIME }
+    );
+
+    const refresh_token = await createToken(
+      { username, email, password, role },
+      REFRESH_TOKEN_KEY,
+      { expiresIn: REFRESH_TOKEN_TIME }
+    );
+
+    if (!access_token && !refresh_token) {
+      return {
+        status: 400,
+        values: "",
+        message: "Token Error",
+      };
+    }
+    const userToken = await pool.query(
+      `SELECT * FROM refresh_token WHERE username =$1`,
+      [username]
+    );
+
+    if (userToken.rows.length > 0) {
+      await pool.query(
+        `UPDATE refresh_token SET refresh = $1 WHERE username = $2`,
+        [refresh_token, username]
+      );
+    } else {
+      await pool.query(
+        `INSERT INTO refresh_token (username, refresh) VALUES ($1, $2)`,
+        [username, refresh_token]
+      );
+    }
 
     return {
-      status: 201,
-      values: {},
+      status: 200,
+      values: { access_token, refresh_token },
       message: "Created successfully",
     };
   } catch (error) {
@@ -157,63 +208,96 @@ export const logoutService = async (user) => {
       user.email,
     ]);
 
-    if (existUser) {
+    if (existUser.rows.length !== 1) {
       return {
-        status: 400,
-        values: "",
-        message: "User already exist",
+        status: 404,
+        message: "User Not Found",
       };
     }
-    const { email, username, password, role } = user;
 
-    const newUser = await pool.query(
-      `INSERT INTO users ('email', 'username', 'password','role')
-      VALUES($1, $2, $3, $4) RETURNING *`,
-      [email, username, password, role]
-    );
-    console.log(newUser);
+    await pool.query(`DELETE FROM refresh_token WHERE username = $1`, [
+      user.username,
+    ]);
 
     return {
-      status: 201,
-      values: {},
-      message: "Created successfully",
+      status: 200,
+      message: "Logout successfully",
     };
   } catch (error) {
     console.log(error);
 
     return {
       status: 400,
-      values: "",
       message: "Bad request",
     };
   }
 };
 
-export const refreshTokenService = async (user) => {
+export const refreshTokenService = async (token) => {
   try {
-    const existUser = await pool.query(`SELECT * FROM users WHERE email = $1`, [
-      user.email,
-    ]);
+    const existToken = await pool.query(
+      `SELECT * FROM refresh_token WHERE refresh = $1`,
+      [token.refreshToken]
+    );
 
-    if (existUser) {
+    if (existToken.rows.length !== 1) {
+      return {
+        status: 404,
+        values: "",
+        message: "Token Not Found",
+      };
+    }
+
+    const existUser = await pool.query(
+      `SELECT * FROM users WHERE username = $1`,
+      [existToken.rows[0].username]
+    );
+
+    if (existUser.rows.length !== 1) {
+      return {
+        status: 404,
+        values: "",
+        message: "User Not Found",
+      };
+    }
+
+    const {
+      ACCESS_TOKEN_KEY,
+      ACCESS_TOKEN_TIME,
+      REFRESH_TOKEN_KEY,
+      REFRESH_TOKEN_TIME,
+    } = configuration.token;
+
+    const { password, email, role, username } = existUser.rows[0];
+
+    const access_token = await createToken(
+      { username, email, password, role },
+      ACCESS_TOKEN_KEY,
+      { expiresIn: ACCESS_TOKEN_TIME }
+    );
+
+    const refresh_token = await createToken(
+      { username, email, password, role },
+      REFRESH_TOKEN_KEY,
+      { expiresIn: REFRESH_TOKEN_TIME }
+    );
+
+    if (!access_token && !refresh_token) {
       return {
         status: 400,
         values: "",
-        message: "User already exist",
+        message: "Token Error",
       };
     }
-    const { email, username, password, role } = user;
 
-    const newUser = await pool.query(
-      `INSERT INTO users ('email', 'username', 'password','role')
-      VALUES($1, $2, $3, $4) RETURNING *`,
-      [email, username, password, role]
+    await pool.query(
+      `UPDATE refresh_token SET username = $1 WHERE refresh = $2`,
+      [username, refresh_token]
     );
-    console.log(newUser);
 
     return {
       status: 201,
-      values: {},
+      values: { access_token, refresh_token },
       message: "Created successfully",
     };
   } catch (error) {
@@ -233,25 +317,11 @@ export const getMeService = async (user) => {
       user.email,
     ]);
 
-    if (existUser) {
-      return {
-        status: 400,
-        values: "",
-        message: "User already exist",
-      };
-    }
-    const { email, username, password, role } = user;
-
-    const newUser = await pool.query(
-      `INSERT INTO users ('email', 'username', 'password','role')
-      VALUES($1, $2, $3, $4) RETURNING *`,
-      [email, username, password, role]
-    );
-    console.log(newUser);
+    const userData = existUser.rows[0];
 
     return {
-      status: 201,
-      values: {},
+      status: 200,
+      values: { user: userData },
       message: "Created successfully",
     };
   } catch (error) {

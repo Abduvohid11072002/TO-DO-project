@@ -55,13 +55,13 @@ export const signinController = async (req, res) => {
   try {
     const { body } = req;
 
-    const { error, value } = await signinValidation(body);
+    const { messages, value } = await signinValidation(body);
 
-    if (error) return res.status(400).send("Bad request");
+    if (!value) return res.status(400).send(messages);
 
     const { status, values, message } = await signinService(value);
 
-    if (status === 201) return res.status(status).json(values);
+    if (status === 200) return res.status(status).json(values);
 
     return res.status(status).send(message);
   } catch (error) {
@@ -73,9 +73,9 @@ export const signinController = async (req, res) => {
 
 export const logoutController = async (req, res) => {
   try {
-    const { status, values, message } = await logoutService();
+    const { user } = req;
 
-    if (status === 201) return res.status(status).json(values);
+    const { status, message } = await logoutService(user);
 
     return res.status(status).send(message);
   } catch (error) {
@@ -89,9 +89,9 @@ export const refresh_tokenController = async (req, res) => {
   try {
     const { body } = req;
 
-    const { error, value } = await refreshTokenValidation(body);
+    const { messages, value } = await refreshTokenValidation(body);
 
-    if (error) return res.status(400).send("Bad request");
+    if (!value) return res.status(400).send(messages);
 
     const { status, values, message } = await refreshTokenService(value);
 
@@ -107,9 +107,11 @@ export const refresh_tokenController = async (req, res) => {
 
 export const getMeController = async (req, res) => {
   try {
-    const { status, values, message } = await getMeService();
+    const { user } = req;
 
-    if (status === 201) return res.status(status).json(values);
+    const { status, values, message } = await getMeService(user);
+
+    if (status === 200) return res.status(status).json(values);
 
     return res.status(status).send(message);
   } catch (error) {
