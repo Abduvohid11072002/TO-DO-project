@@ -32,11 +32,13 @@ export const createTables = async () => {
       CREATE TABLE IF NOT EXISTS tags (
           id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
           name VARCHAR(100) NOT NULL,
+          ownerid UUID NOT NULL,
           createdAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-          updatedAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+          updatedAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (ownerid) REFERENCES users(id) ON DELETE CASCADE ON UPDATE NO ACTION
       )`,
       `
-      CREATE TABLE IF NOT EXISTS priority (
+      CREATE TABLE IF NOT EXISTS priorities (
           id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
           name VARCHAR(100) NOT NULL,
           level INT NOT NULL DEFAULT 3 CHECK (level IN (1, 2, 3)),
@@ -69,6 +71,7 @@ export const createTables = async () => {
     }
   } catch (error) {
     console.error(error);
+
     process.exit(1);
   }
 };

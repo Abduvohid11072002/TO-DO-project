@@ -6,14 +6,15 @@ import {
   updateTaskController,
   deleteTaskController,
 } from "../controllers/tags.controller.js";
+import { checkTokenRole, checkToken } from "../middlewares/checkToken.js";
 
 const router = Router();
 
-router.post("/", createTagController);
-router.get("/", getAllTagsController);
-router.get("/:id", getOneTaskController);
-router.put("/:id", updateTaskController);
-router.delete("/:id", deleteTaskController);
+router.post("/", checkToken, createTagController);
+router.get("/", checkTokenRole, getAllTagsController);
+router.get("/:id", checkTokenRole, getOneTaskController);
+router.put("/:id", checkTokenRole, updateTaskController);
+router.delete("/:id", checkTokenRole, deleteTaskController);
 
 export default router;
 

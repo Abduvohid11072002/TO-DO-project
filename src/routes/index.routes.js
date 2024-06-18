@@ -1,8 +1,8 @@
 import { Router } from "express";
 import authRoutes from "./auth.routes.js";
 import listsRoutes from "./lists.routes.js";
+import tagsRoutes from "./tags.routes.js";
 // import tasksRoutes from "./tasks.routes.js";
-// import tagsRoutes from "./tags.routes.js";
 // import prioritiesRoutes from "./priorities.routes.js";
 import { checkToken } from "../middlewares/checkToken.js";
 
@@ -10,8 +10,8 @@ const router = Router();
 
 router.use("/auth", authRoutes);
 router.use("/lists", checkToken, listsRoutes);
+router.use("/tags", tagsRoutes);
 // router.use("/tasks", tasksRoutes);
-// router.use("/tags", tagsRoutes);
 // router.use("/priorities", prioritiesRoutes);
 
 export default router;
