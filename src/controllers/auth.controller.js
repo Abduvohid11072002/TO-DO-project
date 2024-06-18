@@ -17,9 +17,9 @@ export const signupController = async (req, res) => {
   try {
     const { body } = req;
 
-    const { error, value } = await signupValidation(body);
+    const { messages, value } = await signupValidation(body);
 
-    if (error) return res.status(400).send("Bad request");
+    if (!value) return res.status(400).send(messages);
 
     const { status, values, message } = await signupService(value);
 
@@ -37,13 +37,11 @@ export const verify_otpController = async (req, res) => {
   try {
     const { body } = req;
 
-    const { error, value } = await otpValidation(body);
+    const { messages, value } = await otpValidation(body);
 
-    if (error) return res.status(400).send("Bad request");
+    if (!value) return res.status(400).send(messages);
 
-    const { status, values, message } = await otpService(value);
-
-    if (status === 201) return res.status(status).json(values);
+    const { status, message } = await otpService(value);
 
     return res.status(status).send(message);
   } catch (error) {
