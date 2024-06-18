@@ -148,16 +148,16 @@ export const signinService = async (user) => {
       REFRESH_TOKEN_TIME,
     } = configuration.token;
 
-    const { password, email, role, username } = existUser.rows[0];
+    const { id, password, email, role, username } = existUser.rows[0];
 
     const access_token = await createToken(
-      { username, email, password, role },
+      { id, username, email, password, role },
       ACCESS_TOKEN_KEY,
       { expiresIn: ACCESS_TOKEN_TIME }
     );
 
     const refresh_token = await createToken(
-      { username, email, password, role },
+      { id, username, email, password, role },
       REFRESH_TOKEN_KEY,
       { expiresIn: REFRESH_TOKEN_TIME }
     );
@@ -268,16 +268,16 @@ export const refreshTokenService = async (token) => {
       REFRESH_TOKEN_TIME,
     } = configuration.token;
 
-    const { password, email, role, username } = existUser.rows[0];
-
+    const { id, password, email, role, username } = existUser.rows[0];
+  
     const access_token = await createToken(
-      { username, email, password, role },
+      { id, username, email, password, role },
       ACCESS_TOKEN_KEY,
       { expiresIn: ACCESS_TOKEN_TIME }
     );
 
     const refresh_token = await createToken(
-      { username, email, password, role },
+      { id, username, email, password, role },
       REFRESH_TOKEN_KEY,
       { expiresIn: REFRESH_TOKEN_TIME }
     );
