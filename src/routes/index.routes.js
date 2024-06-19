@@ -3,7 +3,7 @@ import authRoutes from "./auth.routes.js";
 import listsRoutes from "./lists.routes.js";
 import tagsRoutes from "./tags.routes.js";
 import prioritiesRoutes from "./priorities.routes.js";
-// import tasksRoutes from "./tasks.routes.js";
+import tasksRoutes from "./tasks.routes.js";
 
 
 const router = Router();
@@ -12,7 +12,7 @@ router.use("/auth", authRoutes);
 router.use("/lists", listsRoutes);
 router.use("/tags", tagsRoutes);
 router.use("/priorities", prioritiesRoutes);
-// router.use("/tasks", tasksRoutes);
+router.use("/tasks", tasksRoutes);
 
 export default router;
 /*

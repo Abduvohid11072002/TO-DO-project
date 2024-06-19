@@ -27,10 +27,4 @@ process.on("uncaughtException", (err) => {
 
 /*
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp"
-
-    "email": "abduvohidabdurahimov1@gmail.com",
-    "password": "123456"
-
-    "email": "munojategamberdieva03@gmail.com",
-    "password": "123456"
 */

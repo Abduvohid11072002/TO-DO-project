@@ -14,6 +14,7 @@ export const createPriorityController = async (req, res) => {
     const { messages, value } = await prioritiesValidation(body);
 
     if (!value) return res.status(400).send(messages);
+
     const { status, values, message } = await createPriorityService(
       value,
       user
