@@ -1,15 +1,17 @@
 import express from "express";
-import { connectDatabase } from "./config/database.js";
+import { connectDatabase, connectMongoDB } from "./config/database.js";
 import mainRoute from "./routes/index.routes.js";
 import { createTables } from "./models/postgres.tables.js";
+import { logMiddleware } from "./middlewares/logs.middleware.js";
 
 export const app = express();
 connectDatabase();
 createTables();
-
+connectMongoDB();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(logMiddleware);
 
 app.use("/", mainRoute);
 

@@ -8,6 +8,8 @@ const configuration = {
   },
   database: {
     POSTGRES_URI: process.env.POSTGRES_URI,
+    MONGODB_URI: process.env.MONGODB_URI,
+
   },
   salt: {
     BCRYPT_SALT: process.env.BCRYPT_SALT,

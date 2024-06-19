@@ -1,8 +1,9 @@
+import mongoose from "mongoose";
 import pkg from "pg";
 import configuration from "./configuration.js";
 const { Pool } = pkg;
 
-const { POSTGRES_URI } = configuration.database;
+const { POSTGRES_URI, MONGODB_URI } = configuration.database;
 
 const pool = new Pool({
   connectionString: POSTGRES_URI,
@@ -21,6 +22,16 @@ export const connectDatabase = async () => {
   } catch (err) {
     console.error(err);
 
+    process.exit(1);
+  }
+};
+
+export const connectMongoDB = async () => {
+  try {
+    const con = await mongoose.connect(MONGODB_URI);
+    console.log(`Mongo DB connected on host : ${con.connection.host}`);
+  } catch (error) {
+    console.log(error);
     process.exit(1);
   }
 };
