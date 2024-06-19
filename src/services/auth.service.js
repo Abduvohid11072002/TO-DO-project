@@ -73,6 +73,7 @@ export const otpService = async (user) => {
       `SELECT * FROM users WHERE id = $1`,
       [user.userId]
     );
+    console.log(existUserResult.rows)
     if (existUserResult.rows.length !== 1) {
       return {
         message: "Not Found",

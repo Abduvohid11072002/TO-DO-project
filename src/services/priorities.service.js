@@ -1,10 +1,10 @@
 import pool from "../config/database.js";
 
-export const createPriorityService = async (body) => {
+export const createPriorityService = async (body, user) => {
   try {
     const priorityId = await pool.query(
-      `INSERT INTO priorities (name, level) VALUES ($1, $2) RETURNING id`,
-      [body.name, body.level]
+      `INSERT INTO priorities (name, level, ownerid) VALUES ($1, $2, $3) RETURNING id`,
+      [body.name, body.level, user.id]
     );
 
     return {
@@ -26,13 +26,13 @@ export const createPriorityService = async (body) => {
 export const getAllPriorityService = async (user) => {
   try {
     if (user.role === "admin") {
-      const allTags = await pool.query(`SELECT * FROM tags`);
+      const allPrioritiess = await pool.query(`SELECT * FROM priorities`);
 
-      if (allTags.rows.length > 0) {
+      if (allPrioritiess.rows.length > 0) {
         return {
           status: 200,
           message: "",
-          values: allTags.rows,
+          values: allPrioritiess.rows,
         };
       } else {
         return {
@@ -41,18 +41,19 @@ export const getAllPriorityService = async (user) => {
           values: "",
         };
       }
-    }
-    const allTagsUser = await pool.query(
-      `SELECT * FROM tags WHERE ownerid = $1`,
-      [user.id]
-    );
+    } else {
+      const allPrioritiessUser = await pool.query(
+        `SELECT * FROM priorities WHERE ownerid = $1`,
+        [user.id]
+      );
 
-    if (allTagsUser.rows.length > 0) {
-      return {
-        status: 200,
-        message: "",
-        values: allTagsUser.rows,
-      };
+      if (allPrioritiessUser.rows.length > 0) {
+        return {
+          status: 200,
+          message: "",
+          values: allPrioritiessUser.rows,
+        };
+      }
     }
 
     return {
@@ -71,22 +72,38 @@ export const getAllPriorityService = async (user) => {
   }
 };
 
-export const getOnePriorityService = async (id) => {
+export const getOnePriorityService = async (id, user) => {
   try {
-    const tag = await pool.query(`SELECT * FROM tags WHERE id = $1`, [id]);
-
-    if (tag.rows.length !== 1) {
-      return {
-        status: 404,
-        message: "Not Found",
-        values: "",
-      };
+    if (user.role === "admin") {
+      const priotityOne = await pool.query(
+        `SELECT * FROM priorities WHERE id = $1`,
+        [id]
+      );
+      if (priotityOne.rows.length !== 1) {
+        return {
+          status: 404,
+          message: "Not Found",
+          values: "",
+        };
+      }
+    } else {
+      const priotityOne = await pool.query(
+        `SELECT * FROM priorities WHERE id = $1 AND ownerid = $2`,
+        [id, user.id]
+      );
+      if (priotityOne.rows.length !== 1) {
+        return {
+          status: 404,
+          message: "Not Found",
+          values: "",
+        };
+      }
     }
 
     return {
       status: 200,
       message: "",
-      values: tag.rows[0],
+      values: priotityOne.rows[0],
     };
   } catch (error) {
     console.log(error);
@@ -102,11 +119,17 @@ export const getOnePriorityService = async (id) => {
 export const updatePriorityService = async (id, body, user) => {
   try {
     const time = await pool.query(`SELECT now()`);
-
-    await pool.query(
-      `UPDATE tags SET name = $1, updatedat = $2 WHERE id = $3`,
-      [body.name, time.rows[0].now, id]
-    );
+    if (user.role === "admin") {
+      await pool.query(
+        `UPDATE priorities SET name = $1,level = $2 updatedat = $3 WHERE id = $4`,
+        [body.name, body.level, time.rows[0].now, id]
+      );
+    } else {
+      await pool.query(
+        `UPDATE priorities SET name = $1,level = $2 updatedat = $3 WHERE id = $4 AND ownerid = $5`,
+        [body.name, body.level, time.rows[0].now, id, user.id]
+      );
+    }
 
     return {
       status: 200,
@@ -129,11 +152,18 @@ export const updatePriorityService = async (id, body, user) => {
 
 export const deletePriorityService = async (id, user) => {
   try {
-    await pool.query(`DELETE FROM tags WHERE id =$1`, [id]);
+    if (user.role === "admin") {
+      await pool.query(`DELETE FROM priorities WHERE id =$1`, [id]);
+    } else {
+      await pool.query(`DELETE FROM priorities WHERE id =$1 AND ownerid = $2`, [
+        id,
+        user.id,
+      ]);
+    }
 
     return {
       status: 200,
-      message: "Deleted Tag",
+      message: "Deleted Priorities",
     };
   } catch (error) {
     console.log(error);

@@ -42,8 +42,10 @@ export const createTables = async () => {
           id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
           name VARCHAR(100) NOT NULL,
           level INT NOT NULL DEFAULT 3 CHECK (level IN (1, 2, 3)),
+          ownerid UUID NOT NULL,
           createdAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-          updatedAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+          updatedAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (ownerid) REFERENCES users(id) ON DELETE CASCADE ON UPDATE NO ACTION
       )`,
       `
       CREATE TABLE IF NOT EXISTS refresh_token (
@@ -62,7 +64,7 @@ export const createTables = async () => {
           createdAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
           updatedAt TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
           FOREIGN KEY (listId) REFERENCES lists(id) ON DELETE CASCADE ON UPDATE NO ACTION,
-          FOREIGN KEY (priorityId) REFERENCES priority(id) ON DELETE CASCADE ON UPDATE NO ACTION
+          FOREIGN KEY (priorityId) REFERENCES priorities(id) ON DELETE CASCADE ON UPDATE NO ACTION
       )`,
     ];
 

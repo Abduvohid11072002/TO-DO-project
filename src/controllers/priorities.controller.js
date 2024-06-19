@@ -9,12 +9,15 @@ import {
 
 export const createPriorityController = async (req, res) => {
   try {
-    const { body } = req;
+    const { body, user } = req;
 
     const { messages, value } = await prioritiesValidation(body);
 
     if (!value) return res.status(400).send(messages);
-    const { status, values, message } = await createPriorityService(value);
+    const { status, values, message } = await createPriorityService(
+      value,
+      user
+    );
 
     if (status === 201) return res.status(status).json({ values, message });
 
@@ -43,9 +46,12 @@ export const getAllPrioritiesController = async (req, res) => {
 
 export const getOnePriorityController = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { params, user } = req;
 
-    const { status, values, message } = await getOnePriorityService(id);
+    const { status, values, message } = await getOnePriorityService(
+      params.id,
+      user
+    );
 
     if (status === 200) return res.status(status).json(values);
 
