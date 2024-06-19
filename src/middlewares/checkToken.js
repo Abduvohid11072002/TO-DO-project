@@ -30,7 +30,6 @@ export const checkTokenRole = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
 
-
     if (!authHeader) {
       return res.status(403).send("Authorization header missing");
     }
@@ -39,7 +38,7 @@ export const checkTokenRole = async (req, res, next) => {
 
     if (type !== "Bearer" || !token) {
       return res.status(403).send("Authorization failed");
-    };
+    }
 
     const decoded = decodeToken(token);
 
@@ -48,26 +47,27 @@ export const checkTokenRole = async (req, res, next) => {
     let { originalUrl } = req;
     const urlParts = originalUrl.split("/");
 
-    if (urlParts.length === 2) {
-
+    if (decoded.role === "admin") {
+      next();
+      
+    } else if (urlParts.length === 2) {
       const query = `SELECT * FROM ${urlParts[1]} WHERE ownerid = $1`;
       const values = [decoded.id];
 
       const { rows } = await pool.query(query, values);
 
-      if (rows.length > 0 || decoded.role === 'admin') {
+      if (rows.length > 0) {
         next();
       } else {
         res.status(403).send("Authorization role failed");
       }
     } else if (urlParts.length === 3) {
-
       const query = `SELECT * FROM ${urlParts[1]} WHERE ownerid = $1 AND id = $2`;
       const values = [decoded.id, urlParts[2]];
 
       const { rows } = await pool.query(query, values);
 
-      if (rows.length > 0 || decoded.role === 'admin') {
+      if (rows.length > 0) {
         next();
       } else {
         res.status(403).send("Authorization role failed");

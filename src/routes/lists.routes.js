@@ -6,14 +6,15 @@ import {
   updateListController,
   deleteListController,
 } from "../controllers/lists.controller.js";
+import { checkTokenRole, checkToken } from "../middlewares/checkToken.js";
 
 const router = Router();
 
-router.post("/", createListController);
-router.get("/", getListsController);
-router.get("/:id", getOneListController);
-router.put("/:id", updateListController);
-router.delete("/:id", deleteListController);
+router.post("/", checkToken, createListController);
+router.get("/", checkTokenRole, getListsController);
+router.get("/:id", checkTokenRole, getOneListController);
+router.put("/:id", checkTokenRole, updateListController);
+router.delete("/:id", checkTokenRole, deleteListController);
 
 export default router;
 

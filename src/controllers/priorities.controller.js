@@ -67,7 +67,7 @@ export const updatePriorityController = async (req, res) => {
   try {
     const { body, user, params } = req;
 
-    const { messages, value } = await tagsValidation(body);
+    const { messages, value } = await prioritiesValidation(body);
 
     if (!value) return res.status(400).send(messages);
 

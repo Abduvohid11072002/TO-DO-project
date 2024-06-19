@@ -7,11 +7,17 @@ const { NODEMAILER_PORT, NODEMAILER_EMAIL, NODEMAILER_PASS } =
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
   port: NODEMAILER_PORT,
-  secure: NODEMAILER_PORT === 465,
+  secure: NODEMAILER_PORT === 465, // true bo'lsa 465, false bo'lsa 587
   auth: {
     user: NODEMAILER_EMAIL,
     pass: NODEMAILER_PASS,
   },
+  tls: {
+    rejectUnauthorized: false, // Allow self-signed certificates
+  },
+  connectionTimeout: 2 * 60 * 1000, // 2 minutes
+  greetingTimeout: 2 * 60 * 1000, // 2 minutes
+  socketTimeout: 2 * 60 * 1000, // 2 minutes
 });
 
 export async function sendEmail(email, otp) {
@@ -25,8 +31,9 @@ export async function sendEmail(email, otp) {
     });
     return true;
   } catch (error) {
-    console.log(error);
-
+    console.error(error); 
     return false;
   }
 };
+
+

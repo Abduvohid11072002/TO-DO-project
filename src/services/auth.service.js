@@ -73,7 +73,7 @@ export const otpService = async (user) => {
       `SELECT * FROM users WHERE id = $1`,
       [user.userId]
     );
-    console.log(existUserResult.rows)
+    console.log(existUserResult.rows);
     if (existUserResult.rows.length !== 1) {
       return {
         message: "Not Found",
@@ -270,7 +270,7 @@ export const refreshTokenService = async (token) => {
     } = configuration.token;
 
     const { id, password, email, role, username } = existUser.rows[0];
-  
+
     const access_token = await createToken(
       { id, username, email, password, role },
       ACCESS_TOKEN_KEY,
@@ -317,12 +317,12 @@ export const getMeService = async (user) => {
     const existUser = await pool.query(`SELECT * FROM users WHERE email = $1`, [
       user.email,
     ]);
-
+    
     const userData = existUser.rows[0];
 
     return {
       status: 200,
-      values: { user: userData },
+      values: { userData },
       message: "Created successfully",
     };
   } catch (error) {

@@ -45,9 +45,9 @@ export const getAllTagsController = async (req, res) => {
 
 export const getOneTaskController = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { params, user } = req;
 
-    const { status, values, message } = await getOneTagService(id);
+    const { status, values, message } = await getOneTagService(params.id, user);
 
     if (status === 200) return res.status(status).json(values);
 

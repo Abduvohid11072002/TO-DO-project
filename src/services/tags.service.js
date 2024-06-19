@@ -74,8 +74,28 @@ export const getAllTagsService = async (user) => {
   }
 };
 
-export const getOneTagService = async (id) => {
+export const getOneTagService = async (id, user) => {
   try {
+    if (user.role === "admin") {
+      const OnlyOne = await pool.query(`SELECT * FROM tags WHERE id = $1`, [
+        id,
+      ]);
+
+      if (OnlyOne.rows.length !== 1) {
+        return {
+          status: 404,
+          message: "Not Found",
+          values: "",
+        };
+      }
+
+      return {
+        status: 200,
+        message: "",
+        values: OnlyOne.rows[0],
+      };
+    }
+
     const tag = await pool.query(`SELECT * FROM tags WHERE id = $1`, [id]);
 
     if (tag.rows.length !== 1) {
@@ -104,21 +124,48 @@ export const getOneTagService = async (id) => {
 
 export const updateTagService = async (id, body, user) => {
   try {
-    const time = await pool.query(`SELECT now()`);
+     const timeResult = await pool.query(`SELECT now()`);
+    const currentTime = timeResult.rows[0].now;
 
-    await pool.query(
-      `UPDATE tags SET name = $1, updatedat = $2 WHERE id = $3`,
-      [body.name, time.rows[0].now, id]
-    );
+    if (user.role === "admin") {
+      await pool.query(
+        `UPDATE tags SET name = $1, updatedat = $2 WHERE id = $3`,
+        [body.name, currentTime, id]
+      );
 
-    return {
-      status: 200,
-      message: "Created successfully",
-      values: {
-        message: "Tag successfully Updated",
-        tagId: id,
-      },
-    };
+      return {
+        status: 200,
+        message: "",
+        values: {
+          message: "Tag successfully updated",
+          tagId: id,
+        },
+      };
+    } else {
+      const updateResult = await pool.query(
+        `UPDATE tags SET name = $1, updatedat = $2 WHERE id = $3 AND ownerid = $4`,
+        [body.name, currentTime, id, user.id]
+      );
+
+      if (updateResult.rowCount === 0) {
+        return {
+          status: 403,
+          message: "Forbidden",
+          values: {
+            message: "You are not authorized to update this tag",
+          },
+        };
+      }
+
+      return {
+        status: 200,
+        message: "",
+        values: {
+          message: "Tag successfully updated",
+          tagId: id,
+        },
+      };
+    }
   } catch (error) {
     console.log(error);
 
@@ -132,7 +179,18 @@ export const updateTagService = async (id, body, user) => {
 
 export const deleteTagService = async (id, user) => {
   try {
-    await pool.query(`DELETE FROM tags WHERE id =$1`, [id]);
+    if (user.role === "admin") {
+      await pool.query(`DELETE FROM tags WHERE id =$1`, [id]);
+
+      return {
+        status: 200,
+        message: "Deleted Tag",
+      };
+    }
+    await pool.query(`DELETE FROM tags WHERE id =$1 AND ownerid = $2`, [
+      id,
+      user.id,
+    ]);
 
     return {
       status: 200,

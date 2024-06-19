@@ -6,7 +6,6 @@ export const createListService = async (body, user) => {
       `INSERT INTO lists (title, description, ownerid) VALUES ($1, $2, $3) RETURNING id`,
       [body.title, body.description, user.id]
     );
-    console.log(listId.rows[0].id);
 
     if (listId.rows.length !== 1) {
       return {
@@ -134,9 +133,8 @@ export const updateListService = async (id, body, user) => {
       };
     }
 
-    if (user.role !== "admin" || user.id !== existList.rows[0].ownerid) {
+    if (user.role === "admin" || user.id === existList.rows[0].ownerid) {
       const time = await pool.query(`SELECT now()`);
-      console.log(time.rows[0].now);
 
       await pool.query(
         `UPDATE lists set title = $1, description = $2, updatedat = $3 WHERE id = $4`,
@@ -181,18 +179,17 @@ export const deleteListService = async (listId, user) => {
       };
     }
 
-    if (existList.rows[0].ownerid !== user.id || user.role === "admin") {
+    if (existList.rows[0].ownerid === user.id || user.role === "admin") {
+      await pool.query(`DELETE FROM lists WHERE id = $1`, [listId]);
+
       return {
-        status: 400,
-        message: "Authentication role Failed",
+        status: 200,
+        message: "List successfully Deleted",
       };
     }
-
-    await pool.query(`DELETE FROM lists WHERE id = $1`, [listId]);
-
     return {
-      status: 200,
-      message: "List successfully Deleted",
+      status: 400,
+      message: "Authentication role Failed",
     };
   } catch (error) {
     console.log(error);

@@ -85,26 +85,32 @@ export const getOnePriorityService = async (id, user) => {
           message: "Not Found",
           values: "",
         };
-      }
+      };
+      return {
+        status: 200,
+        message: "",
+        values: priotityOne.rows[0],
+      };
+
     } else {
-      const priotityOne = await pool.query(
+      const priotityOnly = await pool.query(
         `SELECT * FROM priorities WHERE id = $1 AND ownerid = $2`,
         [id, user.id]
       );
-      if (priotityOne.rows.length !== 1) {
+      if (priotityOnly.rows.length !== 1) {
         return {
           status: 404,
           message: "Not Found",
           values: "",
         };
-      }
+      };
+      return {
+        status: 200,
+        message: "",
+        values: priotityOnly.rows[0],
+      };
     }
-
-    return {
-      status: 200,
-      message: "",
-      values: priotityOne.rows[0],
-    };
+   
   } catch (error) {
     console.log(error);
 
@@ -118,24 +124,26 @@ export const getOnePriorityService = async (id, user) => {
 
 export const updatePriorityService = async (id, body, user) => {
   try {
-    const time = await pool.query(`SELECT now()`);
+    const { rows } = await pool.query(`SELECT now()`);
+    const currentTime = rows[0].now;
+
     if (user.role === "admin") {
       await pool.query(
-        `UPDATE priorities SET name = $1,level = $2 updatedat = $3 WHERE id = $4`,
-        [body.name, body.level, time.rows[0].now, id]
+        `UPDATE priorities SET name = $1, level = $2, updatedat = $3 WHERE id = $4`,
+        [body.name, body.level, currentTime, id]
       );
     } else {
       await pool.query(
-        `UPDATE priorities SET name = $1,level = $2 updatedat = $3 WHERE id = $4 AND ownerid = $5`,
-        [body.name, body.level, time.rows[0].now, id, user.id]
+        `UPDATE priorities SET name = $1, level = $2, updatedat = $3 WHERE id = $4 AND ownerid = $5`,
+        [body.name, body.level, currentTime, id, user.id]
       );
     }
 
     return {
       status: 200,
-      message: "Created successfully",
+      message: "Updated successfully",
       values: {
-        message: "Tag successfully Updated",
+        message: "Tag successfully updated",
         tagId: id,
       },
     };
@@ -149,6 +157,7 @@ export const updatePriorityService = async (id, body, user) => {
     };
   }
 };
+
 
 export const deletePriorityService = async (id, user) => {
   try {
