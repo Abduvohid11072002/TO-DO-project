@@ -222,7 +222,10 @@ export const logoutService = async (user) => {
 
     return {
       status: 200,
-      message: "Logout successfully",
+      message: {
+        message: "Logout successfully",
+        accessToken: false,
+      },
     };
   } catch (error) {
     console.log(error);
@@ -317,7 +320,7 @@ export const getMeService = async (user) => {
     const existUser = await pool.query(`SELECT * FROM users WHERE email = $1`, [
       user.email,
     ]);
-    
+
     const userData = existUser.rows[0];
 
     return {

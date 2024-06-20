@@ -16,9 +16,12 @@ export const checkToken = async (req, res, next) => {
     }
 
     const decoded = decodeToken(token);
+    if (decoded === false) {
+      return res.status(403).send("Authentication failed");
+    };
 
     req.user = decoded;
-
+    
     next();
   } catch (error) {
     console.error(error);
